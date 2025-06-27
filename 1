@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カードカウンター</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .counter { margin-bottom: 10px; }
+    button { margin: 2px; }
+    .label { display: inline-block; width: 70px; }
+  </style>
+</head>
+<body>
+  <h1>カードカウンター</h1>
+
+  <div class="counter"><span class="label">AF:</span> <span id="AF">0</span>
+    <button onclick="modify('AF', +1)">＋</button><button onclick="modify('AF', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">合成AF:</span> <span id="CompAF">0</span>
+    <button onclick="composite()">合成</button><button onclick="modify('CompAF', +1)">＋</button><button onclick="modify('CompAF', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">AFα:</span> <span id="Alpha">0</span>
+    <button onclick="alpha()">_α_</button><button onclick="modify('Alpha', +1)">＋</button><button onclick="modify('Alpha', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">AFβ:</span> <span id="Beta">0</span>
+    <button onclick="beta()">_β_</button><button onclick="modify('Beta', +1)">＋</button><button onclick="modify('Beta', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">AFγ:</span> <span id="Gamma">0</span>
+    <button onclick="gamma()">_γ_</button><button onclick="modify('Gamma', +1)">＋</button><button onclick="modify('Gamma', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">AFΩ:</span> <span id="Omega">0</span>
+    <button onclick="omega()">_Ω_</button><button onclick="modify('Omega', +1)">＋</button><button onclick="modify('Omega', -1)">－</button>
+  </div>
+
+  <div class="counter"><span class="label">人形:</span> <span id="DOLL">0</span>
+    <button onclick="modify('DOLL', +1)">＋</button><button onclick="modify('DOLL', -1)">－</button>
+  </div>
+
+  <div>
+    <button onclick="undo()">戻す</button>
+    <button onclick="redo()">進める</button>
+    <button onclick="reset()">初期化</button>
+  </div>
+
+  <script>
+    const state = {
+      AF: 0,
+      CompAF: 0,
+      Alpha: 0,
+      Beta: 0,
+      Gamma: 0,
+      Omega: 0,
+      DOLL: 0
+    };
+
+    const history = [JSON.stringify(state)];
+    let idx = 0;
+
+    function saveState() {
+      history.splice(idx + 1);
+      history.push(JSON.stringify(state));
+      idx++;
+    }
+
+    function applyState(json) {
+      const newState = JSON.parse(json);
+      for (const key in newState) {
+        state[key] = newState[key];
+        document.getElementById(key).textContent = state[key];
+      }
+    }
+
+    function modify(key, delta) {
+      state[key] += delta;
+      saveState();
+      applyState(history[idx]);
+    }
+
+    function composite() {
+      if (state.AF >= 2) {
+        state.AF -= 2;
+        state.CompAF += 1;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    function alpha() {
+      if (state.AF >= 1 && state.CompAF >= 1) {
+        state.AF -= 1;
+        state.CompAF -= 1;
+        state.Alpha += 1;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    function beta() {
+      if (state.AF >= 2 && state.CompAF >= 1) {
+        state.AF -= 2;
+        state.CompAF -= 1;
+        state.Beta += 1;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    function gamma() {
+      if (state.CompAF >= 2) {
+        state.CompAF -= 2;
+        state.Gamma += 1;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    function omega() {
+      if (state.Alpha >= 1 && state.Beta >= 1 && state.Gamma >= 1) {
+        state.Alpha -= 1;
+        state.Beta -= 1;
+        state.Gamma -= 1;
+        state.Omega += 1;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    function undo() {
+      if (idx > 0) {
+        idx--;
+        applyState(history[idx]);
+      }
+    }
+
+    function redo() {
+      if (idx < history.length - 1) {
+        idx++;
+        applyState(history[idx]);
+      }
+    }
+
+    function reset() {
+      if (idx > 0) {
+        idx++;
+        state.AF = 0;
+        state.CompAF = 0;
+        state.Alpha = 0;
+        state.Beta = 0;
+        state.Gamma = 0;
+        state.Omega = 0;
+        state.DOLL = 0;
+        saveState();
+        applyState(history[idx]);
+      }
+    }
+
+    // 初期表示
+    applyState(history[0]);
+  </script>
+</body>
+</html>
